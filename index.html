@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小学数学口算训练</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .game-container {
+            max-width: 480px;
+            width: 100%;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 12px 15px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-row1 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .level-badge {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .grade-badge {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .score-display {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .score-value {
+            color: #2196F3;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .lives-display {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 18px;
+        }
+
+        .heart {
+            color: #EF5350;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .heart.lost {
+            opacity: 0.3;
+            filter: grayscale(100%);
+        }
+
+        .header-row2 {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            background: linear-gradient(135deg, #42A5F5, #1E88E5);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(66, 165, 245, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #66BB6A, #43A047);
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+        }
+
+        .mode-btn:active {
+            transform: scale(0.95);
+        }
+
+        .downgrade-btn {
+            background: linear-gradient(135deg, #FF7043, #F4511E);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(255, 112, 67, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .downgrade-btn:active {
+            transform: scale(0.95);
+        }
+
+        .question-display {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            margin-bottom: 15px;
+            text-align: center;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+            animation: questionPop 0.3s ease;
+        }
+
+        @keyframes questionPop {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .question {
+            font-size: clamp(28px, 8vw, 48px);
+            font-weight: bold;
+            color: #1565C0;
+            margin-bottom: 10px;
+        }
+
+        .question-info {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .options-container.compare-mode {
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 280px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .options-container.compare-mode .option-btn {
+            padding: 25px 10px;
+            font-size: 36px;
+        }
+
+        .option-btn {
+            background: white;
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: clamp(18px, 6vw, 28px);
+            font-weight: bold;
+            color: #1565C0;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+            transition: all 0.15s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn:active {
+            transform: scale(0.95);
+        }
+
+        .option-btn.correct {
+            background: linear-gradient(135deg, #66BB6A, #43A047);
+            color: white;
+            animation: correctPop 0.4s ease;
+        }
+
+        @keyframes correctPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .option-btn.wrong {
+            background: linear-gradient(135deg, #EF5350, #E53935);
+            color: white;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .progress-bar {
+            background: white;
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #66BB6A, #43A047);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            transition: width 0.3s ease;
+        }
+
+        .combo-display {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 36px;
+            font-weight: bold;
+            color: #FF9800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: comboPopup 0.6s ease forwards;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        @keyframes comboPopup {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.3);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .level-up-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            box-shadow: 0 4px 20px rgba(255, 152, 0, 0.5);
+            animation: levelUpPopup 0.5s ease forwards;
+            display: none;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        @keyframes levelUpPopup {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .stats-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            font-size: 13px;
+            color: #666;
+        }
+
+        .stat-item strong {
+            color: #2196F3;
+            font-size: 18px;
+        }
+
+        /* 年级选择器 - 自定义下拉 */
+        .grade-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .grade-dropdown-btn {
+            background: linear-gradient(135deg, #26C6DA, #00ACC1);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(38, 198, 218, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 90px;
+            justify-content: center;
+        }
+
+        .grade-dropdown-btn::after {
+            content: '▼';
+            font-size: 8px;
+            margin-left: 4px;
+        }
+
+        .grade-dropdown-btn.open::after {
+            content: '▲';
+        }
+
+        .grade-dropdown-list {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 4px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            overflow: hidden;
+            z-index: 200;
+            min-width: 100%;
+        }
+
+        .grade-dropdown-list.show {
+            display: block;
+        }
+
+        .grade-dropdown-item {
+            padding: 10px 16px;
+            font-size: 13px;
+            color: #333;
+            cursor: pointer;
+            transition: background 0.15s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .grade-dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .grade-dropdown-item:hover {
+            background: #E3F2FD;
+        }
+
+        .grade-dropdown-item.selected {
+            background: #26C6DA;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* 错题本按钮 */
+        .btn-wrongbook {
+            background: linear-gradient(135deg, #AB47BC, #8E24AA);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(171, 71, 188, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-wrongbook:active {
+            transform: scale(0.95);
+        }
+
+        /* 升级按钮 */
+        .upgrade-btn {
+            background: linear-gradient(135deg, #66BB6A, #43A047);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(102, 187, 106, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .upgrade-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 弹窗样式 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .modal-overlay.show {
+            pointer-events: auto;
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            max-width: 90%;
+            max-height: 85%;
+            overflow-y: auto;
+            animation: modalPop 0.3s ease;
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal h2 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .modal .close-btn {
+            background: linear-gradient(135deg, #66BB6A, #43A047);
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(102, 187, 106, 0.4);
+        }
+
+        /* 错题记录样式 */
+        .wrong-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+        .wrong-item:last-child {
+            border-bottom: none;
+        }
+
+        .wrong-item .question {
+            font-weight: bold;
+            color: #1565C0;
+            font-size: 16px;
+        }
+
+        .wrong-item .count {
+            background: #EF5350;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .wrong-section {
+            margin-bottom: 15px;
+        }
+
+        .wrong-section-title {
+            font-weight: bold;
+            color: #FF9800;
+            font-size: 15px;
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #FF9800;
+        }
+
+        .empty-note {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+            font-size: 14px;
+        }
+
+        /* 挑战模式按钮 */
+        .challenge-btn {
+            background: linear-gradient(135deg, #FF7043, #F4511E) !important;
+        }
+
+        .rank-btn {
+            background: linear-gradient(135deg, #FFD54F, #FFC107) !important;
+            color: #333 !important;
+        }
+
+        /* 挑战模式弹窗 */
+        .challenge-header {
+            display: none;
+            background: linear-gradient(135deg, #FF7043, #F4511E);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 12px;
+            text-align: center;
+            box-shadow: 0 3px 12px rgba(255, 112, 67, 0.3);
+        }
+
+        .challenge-header.show {
+            display: block;
+        }
+
+        .challenge-timer {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .challenge-score {
+            font-size: 20px;
+        }
+
+        /* 排行榜样式 */
+        .rank-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        .rank-item:first-child {
+            background: linear-gradient(135deg, #FFF9C4, #FFECB3);
+            font-weight: bold;
+        }
+
+        .rank-item .rank-num {
+            font-size: 18px;
+            margin-right: 10px;
+        }
+
+        .rank-item .rank-score {
+            color: #FF7043;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .rank-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+
+        .rank-tab {
+            padding: 8px 16px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .rank-tab.active {
+            background: linear-gradient(135deg, #FF7043, #F4511E);
+            color: white;
+        }
+
+        .rank-tab:not(.active) {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        /* 学习按钮样式 */
+        .learn-btn {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .learn-btn:hover {
+            background: linear-gradient(135deg, #FFA726, #FB8C00);
+        }
+
+        .wrong-item-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        /* 教学弹窗样式 */
+        .teach-modal {
+            max-width: 95%;
+        }
+
+        .teach-title {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #FF9800;
+        }
+
+        .teach-question {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1565C0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .teach-step {
+            text-align: left;
+            font-size: 15px;
+            line-height: 2;
+            color: #333;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #FFF8E1;
+            border-radius: 10px;
+        }
+
+        .teach-visual {
+            margin: 20px 0;
+            padding: 20px;
+            background: #E3F2FD;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .dot-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #FF9800;
+            display: inline-block;
+        }
+
+        .dot.small {  /* 小数/补数用绿色 */
+            background: #4CAF50;
+        }
+
+        .dot.empty {
+            background: transparent;
+            border: 2px dashed #ccc;
+        }
+
+        .dot.highlight {
+            background: #4CAF50;
+        }
+
+        .teach-formula {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1565C0;
+            margin-top: 15px;
+        }
+
+        .teach-formula .result {
+            color: #4CAF50;
+        }
+
+        .teach-tip {
+            background: #FFF3E0;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #E65100;
+            margin-top: 15px;
+        }
+
+        .teach-btn {
+            background: linear-gradient(135deg, #66BB6A, #43A047);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+    /* 挑战结束弹窗 */
+        .result-modal {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 90%;
+            animation: modalPop 0.3s ease;
+        }
+
+        .result-modal h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #FF7043;
+        }
+
+        .result-score {
+            font-size: 48px;
+            font-weight: bold;
+            color: #FF7043;
+            margin: 20px 0;
+        }
+
+        .result-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .result-stat {
+            text-align: center;
+        }
+
+        .result-stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+
+        .result-stat-label {
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 挑战模式头部 -->
+        <div class="challenge-header" id="challengeHeader">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>⏱️ 限时挑战</span>
+                <button onclick="exitChallenge()" style="background: rgba(255,255,255,0.3); border: none; color: white; padding: 5px 12px; border-radius: 10px; font-size: 12px; cursor: pointer;">✕ 退出</button>
+            </div>
+            <div class="challenge-timer" id="challengeTimer">60</div>
+            <div class="challenge-score">得分: <span id="challengeScore">0</span></div>
+        </div>
+
+        <div class="header">
+            <div class="header-row1">
+                <div class="grade-dropdown" id="gradeDropdown">
+                    <button class="grade-dropdown-btn" id="gradeDropdownBtn" onclick="toggleGradeDropdown()">
+                        <span id="gradeDropdownText">一年级</span>
+                    </button>
+                    <div class="grade-dropdown-list" id="gradeDropdownList">
+                        <div class="grade-dropdown-item selected" onclick="selectGrade(0)">一年级</div>
+                        <div class="grade-dropdown-item" onclick="selectGrade(1)">二年级</div>
+                        <div class="grade-dropdown-item" onclick="selectGrade(2)">三年级</div>
+                        <div class="grade-dropdown-item" onclick="selectGrade(3)">四年级</div>
+                        <div class="grade-dropdown-item" onclick="selectGrade(4)">五年级</div>
+                        <div class="grade-dropdown-item" onclick="selectGrade(5)">六年级</div>
+                    </div>
+                </div>
+                <div class="lives-display">
+                    <span class="heart">❤</span>
+                    <span class="heart">❤</span>
+                    <span class="heart">❤</span>
+                </div>
+                <div class="score-display">分: <span class="score-value" id="score">0</span></div>
+            </div>
+            <div class="header-row2">
+                <button class="mode-btn active" onclick="setMode('addsub', this)">加减</button>
+                <button class="mode-btn" onclick="setMode('muldiv', this)">乘除</button>
+            </div>
+            <div class="header-row2">
+                <button class="btn-wrongbook" onclick="showWrongBook()">📖 错题本</button>
+                <button class="upgrade-btn" onclick="upgradeLevel()">↑ 升级</button>
+                <button class="downgrade-btn" onclick="downgradeLevel()">↓ 降级</button>
+            </div>
+            <div class="header-row2">
+                <button class="mode-btn challenge-btn" onclick="startChallenge()">⏱️ 限时挑战</button>
+                <button class="mode-btn rank-btn" onclick="showRank()">🏆 排行榜</button>
+            </div>
+        </div>
+
+        <div class="question-display">
+            <div class="question" id="question">5 + 3 = ?</div>
+            <div class="question-info">第 <span id="questionNum">1</span> / 10 题</div>
+        </div>
+
+        <div class="options-container" id="options">
+            <!-- 选项动态生成 -->
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress" style="width: 10%">0 / 10</div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">正确: <strong id="correct">0</strong></div>
+            <div class="stat-item">错误: <strong id="wrong">0</strong></div>
+            <div class="stat-item">连击: <strong id="combo">0</strong></div>
+        </div>
+    </div>
+
+    <div class="combo-display" id="comboDisplay">连击 x3！</div>
+    <div class="level-up-text" id="levelUpText">升级！</div>
+
+    <!-- 错题本弹窗 -->
+    <div class="modal-overlay" id="wrongBookModal">
+        <div class="modal">
+            <h2>📖 错题本</h2>
+            <div id="wrongBookContent"></div>
+            <button class="close-btn" onclick="closeModal('wrongBookModal')">关闭</button>
+        </div>
+    </div>
+
+    <!-- 排行榜弹窗 -->
+    <div class="modal-overlay" id="rankModal">
+        <div class="modal">
+            <h2>🏆 排行榜</h2>
+            <div class="rank-tabs">
+                <button class="rank-tab active" onclick="switchRankTab('addsub')">加减</button>
+                <button class="rank-tab" onclick="switchRankTab('muldiv')">乘除</button>
+            </div>
+            <div id="rankContent"></div>
+            <button class="close-btn" onclick="closeModal('rankModal')">关闭</button>
+        </div>
+    </div>
+
+    <!-- 挑战结束弹窗 -->
+    <div class="modal-overlay" id="challengeEndModal">
+        <div class="result-modal">
+            <h2>⏱️ 时间到！</h2>
+            <div class="result-score" id="finalScore">0</div>
+            <div>本次得分</div>
+            <div class="result-stats">
+                <div class="result-stat">
+                    <div class="result-stat-value" id="resultCorrect">0</div>
+                    <div class="result-stat-label">答对</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" id="resultMaxCombo">0</div>
+                    <div class="result-stat-label">最高连击</div>
+                </div>
+            </div>
+            <div id="newRecordText" style="color: #FF7043; font-weight: bold; margin: 15px 0; display: none;">
+                🎉 新纪录！
+            </div>
+            <button class="close-btn" onclick="exitChallenge()" style="background: linear-gradient(135deg, #78909C, #607D8B); margin: 10px 5px 0 0;">← 返回</button>
+            <button class="close-btn" onclick="closeChallengeEnd()" style="background: linear-gradient(135deg, #FF7043, #F4511E); margin-top: 10px;">再挑战一次 🔥</button>
+        </div>
+    </div>
+
+    <!-- 提示弹窗 -->
+    <div class="modal-overlay" id="hintModal">
+        <div class="modal" style="max-width: 85%;">
+            <h2>💡 学习提示</h2>
+            <div id="hintText" style="text-align: left; font-size: 14px; line-height: 1.8; white-space: pre-line; padding: 15px 5px;"></div>
+            <button class="close-btn" onclick="closeHint()">我学会了</button>
+        </div>
+    </div>
+
+    <!-- 教学弹窗 -->
+    <div class="modal-overlay" id="teachModal">
+        <div class="modal teach-modal">
+            <h2 class="teach-title" id="teachTitle">💡 凑十法</h2>
+            <div class="teach-question" id="teachQuestion">8 + 6 = ?</div>
+            <div id="teachContent"></div>
+            <button class="teach-btn" onclick="closeModal('teachModal')">我学会了，去练习！</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== 游戏状态 ==========
+        let score = 0;
+        let level = 1;           // 1-60关（每年级10关）
+        let lives = 3;
+        let currentMode = 'addsub';
+        let currentQuestion = {};
+        let questionNum = 0;     // 当前关内题号（0-9）
+        let questionsPerLevel = 10;
+        let correctInLevel = 0;  // 当前关答对题数
+        let correct = 0;
+        let wrong = 0;
+        let combo = 0;
+        let maxCombo = 0;
+        let currentGrade = 0;    // 当前年级（0-5）
+        
+        // 错题记录
+        let wrongBook = {};
+        
+        // 错题连续记录（用于触发提示）
+        let wrongStreak = {};    // { "8+6": 2 } 连续错误次数
+        
+        // 关卡记录 { "1-1": { passed: true, stars: 3 }, "1-2": { passed: false, stars: 0 } }
+        let levelProgress = {};
+
+        // 挑战模式变量
+        let isChallengeMode = false;
+        let challengeTimer = 60;
+        let challengeInterval = null;
+        let challengeCorrect = 0;
+        let challengeWrong = 0;
+        let challengeCombo = 0;
+        let challengeMaxCombo = 0;
+        let currentRankTab = 'addsub';
+
+        // ========== 年级和关卡配置 ==========
+        const gradeNames = ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级'];
+        
+        // 关卡名称（每年级10关）
+        const levelNames = {
+            0: ['认识数字', '5以内加法', '5以内减法', '10以内加法', '10以内减法', '10以内加减', '凑十法入门', '借十法入门', '口算小达人', '10以内大师'],
+            1: ['基础训练', '基础训练', '20以内加法', '20以内减法', '整十数加法', '两位数加法', '两位数减法', '100以内加', '100以内减', '100以内大师'],
+            2: ['三位数加法', '三位数减法', '加减验算', '口诀大挑战', '乘法应用', '除法应用', '混合运算', '速算技巧', '综合训练', '1000以内大师'],
+            3: ['万数加法', '万数减法', '大数速算', '口诀精通', '乘除强化', '估算入门', '综合复习', '速度提升', '准确率挑战', '万数大师'],
+            4: ['口诀冠军', '速算王者', '准确大师', '全能选手', '挑战极限', '巅峰对决', '完美通关', '数学勇士', '巅峰冲刺', '五年级大师'],
+            5: ['终极挑战', '口诀至尊', '速度之王', '准确之王', '全能冠军', '数学大师', '巅峰之作', '完美通关', '最强王者', '口算至尊']
+        };
+
+        // 年级阶段配置（每年级分2个阶段，每阶段5关）
+        // stage: 0=前半段（基础）, 1=后半段（进阶）
+        const gradeStages = [
+            // 一年级：5以内 → 10以内
+            { stage0: { addMax: 5, subMax: 5, mulMax: 9 }, stage1: { addMax: 10, subMax: 10, mulMax: 9 } },
+            // 二年级：20以内 → 100以内
+            { stage0: { addMax: 20, subMax: 20, mulMax: 9 }, stage1: { addMax: 100, subMax: 100, mulMax: 9 } },
+            // 三年级：1000以内 + 口诀表
+            { stage0: { addMax: 1000, subMax: 1000, mulMax: 9 }, stage1: { addMax: 1000, subMax: 1000, mulMax: 9 } },
+            // 四年级：万以内 + 口诀表
+            { stage0: { addMax: 10000, subMax: 10000, mulMax: 9 }, stage1: { addMax: 10000, subMax: 10000, mulMax: 9 } },
+            // 五年级：巩固
+            { stage0: { addMax: 10000, subMax: 10000, mulMax: 9 }, stage1: { addMax: 10000, subMax: 10000, mulMax: 9 } },
+            // 六年级：巩固
+            { stage0: { addMax: 10000, subMax: 10000, mulMax: 9 }, stage1: { addMax: 10000, subMax: 10000, mulMax: 9 } }
+        ];
+
+        // 获取当前年级（0-5）
+        function getGrade() {
+            return Math.min(Math.floor((level - 1) / 10), 5);
+        }
+
+        // 获取当前阶段（0=前半段基础关，1=后半段进阶关）
+        function getStage() {
+            const levelInGrade = (level - 1) % 10; // 0-9
+            return levelInGrade < 5 ? 0 : 1;
+        }
+
+        // 获取年级配置
+        function getGradeConfig() {
+            const g = getGrade();
+            const s = getStage();
+            return gradeStages[g][`stage${s}`];
+        }
+
+        // ========== 题型系统 ==========
+        // 题型类型
+        const QUESTION_TYPES = {
+            STANDARD: 'standard',     // 标准题: 8 + 6 = ?
+            FILL_BLANK: 'fill_blank', // 填空题: 8 + ? = 14
+            COMPARE: 'compare'         // 比大小: 8 + 5 ○ 9 + 3
+        };
+
+        // 随机数
+        function random(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // 随机选择数组元素
+        function randomChoice(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        // ========== 题目生成 ==========
+        
+        // 生成题目（主入口）
+        function generateQuestion() {
+            // 决定题型
+            const grade = getGrade();
+            let questionType = QUESTION_TYPES.STANDARD;
+            
+            if (grade >= 2) {
+                // 三年级及以上才有填空题和比大小
+                const rand = Math.random();
+                if (rand < 0.5) {
+                    questionType = QUESTION_TYPES.STANDARD;
+                } else if (rand < 0.8) {
+                    questionType = QUESTION_TYPES.FILL_BLANK;
+                } else {
+                    questionType = QUESTION_TYPES.COMPARE;
+                }
+            } else {
+                // 一二年级只做标准题
+                questionType = QUESTION_TYPES.STANDARD;
+            }
+
+            // 混合模式时随机选择运算类型
+            let actualMode = currentMode;
+            if (currentMode === 'addsub') {
+                actualMode = Math.random() < 0.5 ? 'add' : 'subtract';
+            } else if (currentMode === 'muldiv') {
+                actualMode = Math.random() < 0.5 ? 'multiply' : 'divide';
+            }
+
+            // 根据题型生成
+            if (questionType === QUESTION_TYPES.FILL_BLANK) {
+                generateFillBlankQuestion(actualMode);
+            } else if (questionType === QUESTION_TYPES.COMPARE) {
+                generateCompareQuestion(actualMode);
+            } else {
+                generateStandardQuestion(actualMode);
+            }
+
+            // 记录题型
+            currentQuestion.type = questionType;
+            
+            displayQuestion();
+        }
+
+        // 生成标准题
+        function generateStandardQuestion(mode) {
+            const config = getGradeConfig();
+            let a, b, answer;
+
+            switch(mode) {
+                case 'add':
+                    // 加法：根据年级配置，确保不超范围
+                    a = random(1, Math.floor(config.addMax / 2));
+                    b = random(1, Math.min(config.addMax - a, 10));
+                    answer = a + b;
+                    break;
+                case 'subtract':
+                    // 减法：根据年级配置确定范围
+                    const maxSub = Math.min(config.subMax, 99);
+                    const minSub = config.subMax <= 5 ? 3 : (config.subMax <= 10 ? 5 : 10);
+                    a = random(minSub, maxSub);
+                    b = random(1, Math.min(a - 1, Math.floor(maxSub / 5)));
+                    answer = a - b;
+                    break;
+                case 'multiply':
+                    a = random(2, Math.min(9, config.mulMax));
+                    b = random(2, Math.min(9, config.mulMax));
+                    answer = a * b;
+                    break;
+                case 'divide':
+                    const f1 = random(2, Math.min(9, config.mulMax));
+                    const f2 = random(2, Math.min(9, config.mulMax));
+                    a = f1 * f2;
+                    b = f1;
+                    answer = f2;
+                    break;
+            }
+
+            currentQuestion = {
+                a: a,
+                b: b,
+                answer: answer,
+                mode: mode,
+                type: QUESTION_TYPES.STANDARD,
+                display: `${a} ${getOperator(mode)} ${b} = ?`
+            };
+        }
+
+        // 生成填空题
+        function generateFillBlankQuestion(mode) {
+            const config = getGradeConfig();
+            let a, b, answer;
+            let blankPosition = Math.random() < 0.5 ? 'first' : 'second'; // 哪个位置填空
+
+            switch(mode) {
+                case 'add':
+                    a = random(1, Math.floor(config.addMax / 2));
+                    b = random(1, config.addMax - a);
+                    answer = a + b;
+                    break;
+                case 'subtract':
+                    a = random(10, config.subMax);
+                    b = random(1, a - 1);
+                    answer = a - b;
+                    break;
+                case 'multiply':
+                    a = random(2, Math.min(9, config.mulMax));
+                    b = random(2, Math.min(9, config.mulMax));
+                    answer = a * b;
+                    break;
+                case 'divide':
+                    const f1 = random(2, Math.min(9, config.mulMax));
+                    const f2 = random(2, Math.min(9, config.mulMax));
+                    a = f1 * f2;
+                    b = f1;
+                    answer = f2;
+                    break;
+            }
+
+            // 生成显示文本
+            let display, correctAnswer;
+            if (blankPosition === 'first') {
+                display = `? ${getOperator(mode)} ${b} = ${answer}`;
+                correctAnswer = a;
+            } else {
+                display = `${a} ${getOperator(mode)} ? = ${answer}`;
+                correctAnswer = b;
+            }
+
+            currentQuestion = {
+                a: a,
+                b: b,
+                answer: correctAnswer,
+                mode: mode,
+                type: QUESTION_TYPES.FILL_BLANK,
+                blankPosition: blankPosition,
+                display: display
+            };
+        }
+
+        // 生成比大小题
+        function generateCompareQuestion(mode) {
+            const config = getGradeConfig();
+            
+            // 生成左右两边
+            let leftA, leftB, rightA, rightB, leftAns, rightAns;
+            
+            // 左边
+            switch(mode) {
+                case 'add':
+                    leftA = random(1, Math.floor(config.addMax / 3));
+                    leftB = random(1, Math.floor(config.addMax / 3));
+                    leftAns = leftA + leftB;
+                    break;
+                case 'subtract':
+                    leftA = random(10, config.subMax);
+                    leftB = random(1, leftA - 1);
+                    leftAns = leftA - leftB;
+                    break;
+                case 'multiply':
+                    leftA = random(2, Math.min(9, config.mulMax));
+                    leftB = random(2, Math.min(9, config.mulMax));
+                    leftAns = leftA * leftB;
+                    break;
+                case 'divide':
+                    const f1 = random(2, Math.min(9, config.mulMax));
+                    const f2 = random(2, Math.min(9, config.mulMax));
+                    leftA = f1 * f2;
+                    leftB = f1;
+                    leftAns = f2;
+                    break;
+            }
+            
+            // 右边（使结果略有不同）
+            switch(mode) {
+                case 'add':
+                    rightA = random(1, Math.floor(config.addMax / 3));
+                    rightB = random(1, Math.floor(config.addMax / 3));
+                    rightAns = rightA + rightB;
+                    break;
+                case 'subtract':
+                    rightA = random(10, config.subMax);
+                    rightB = random(1, rightA - 1);
+                    rightAns = rightA - rightB;
+                    break;
+                case 'multiply':
+                    rightA = random(2, Math.min(9, config.mulMax));
+                    rightB = random(2, Math.min(9, config.mulMax));
+                    rightAns = rightA * rightB;
+                    break;
+                case 'divide':
+                    const f1 = random(2, Math.min(9, config.mulMax));
+                    const f2 = random(2, Math.min(9, config.mulMax));
+                    rightA = f1 * f2;
+                    rightB = f1;
+                    rightAns = f2;
+                    break;
+            }
+
+            // 确定正确答案（左右关系）
+            let compareAnswer;
+            if (leftAns < rightAns) compareAnswer = '<';
+            else if (leftAns > rightAns) compareAnswer = '>';
+            else compareAnswer = '=';
+
+            currentQuestion = {
+                leftA: leftA, leftB: leftB,
+                rightA: rightA, rightB: rightB,
+                leftAns: leftAns, rightAns: rightAns,
+                answer: compareAnswer,
+                mode: mode,
+                type: QUESTION_TYPES.COMPARE,
+                display: `${leftA}${getOperator(mode)}${leftB} ○ ${rightA}${getOperator(mode)}${rightB}`
+            };
+        }
+
+        // 获取运算符符号
+        function getOperator(mode) {
+            switch(mode) {
+                case 'add': return '+';
+                case 'subtract': return '-';
+                case 'multiply': return '×';
+                case 'divide': return '÷';
+                default: return '+';
+            }
+        }
+
+        // 显示题目
+        function displayQuestion() {
+            const questionEl = document.getElementById('question');
+            const optionsContainer = document.getElementById('options');
+            
+            questionEl.textContent = currentQuestion.display;
+            document.getElementById('questionNum').textContent = questionNum + 1;
+
+            // 根据题型生成不同选项
+            if (currentQuestion.type === QUESTION_TYPES.COMPARE) {
+                // 比大小选项
+                optionsContainer.innerHTML = '';
+                optionsContainer.classList.add('compare-mode');
+                ['<', '>', '='].forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = opt;
+                    btn.style.fontSize = '36px';
+                    btn.onclick = () => selectOption(opt);
+                    optionsContainer.appendChild(btn);
+                });
+            } else {
+                // 数字选项
+                optionsContainer.classList.remove('compare-mode');
+                generateOptions(currentQuestion.answer);
+            }
+        }
+
+        // 生成选项（标准题和填空题）
+        function generateOptions(correctAnswer) {
+            const optionsContainer = document.getElementById('options');
+            const options = [correctAnswer];
+
+            // 生成干扰项
+            let attempts = 0;
+            while (options.length < 4 && attempts < 50) {
+                attempts++;
+                let wrong = correctAnswer + random(-5, 5);
+                if (wrong > 0 && wrong !== correctAnswer && !options.includes(wrong)) {
+                    options.push(wrong);
+                }
+            }
+
+            // 如果干扰项不够，补充
+            while (options.length < 4) {
+                options.push(correctAnswer + options.length);
+            }
+
+            // 打乱顺序
+            for (let i = options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+
+            optionsContainer.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => selectOption(opt);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // ========== 关卡系统 ==========
+        
+        // 下一题
+        function nextQuestion() {
+            questionNum++;
+
+            if (questionNum >= questionsPerLevel) {
+                // 本关结束，判断通关
+                checkLevelComplete();
+            } else {
+                generateQuestion();
+            }
+            updateUI();
+        }
+
+        // 检查关卡完成情况
+        function checkLevelComplete() {
+            const levelKey = `${getGrade()}-${(level - 1) % 10 + 1}`;
+            const stars = correctInLevel >= 10 ? 3 : correctInLevel >= 9 ? 2 : correctInLevel >= 8 ? 1 : 0;
+            
+            if (stars > 0) {
+                // 通关成功
+                const isNewRecord = !levelProgress[levelKey] || levelProgress[levelKey].stars < stars;
+                
+                // 记录关卡进度
+                if (!levelProgress[levelKey]) {
+                    levelProgress[levelKey] = { passed: false, stars: 0 };
+                }
+                if (stars > levelProgress[levelKey].stars) {
+                    levelProgress[levelKey].stars = stars;
+                }
+                levelProgress[levelKey].passed = true;
+
+                // 显示通关成功
+                showLevelComplete(true, stars, isNewRecord);
+                
+                // 延迟进入下一关
+                setTimeout(() => {
+                    if (level < 60) {
+                        level++;
+                        questionNum = 0;
+                        correctInLevel = 0;
+                        lives = 3;
+                        generateQuestion();
+                    } else {
+                        showMaxLevel();
+                    }
+                }, 2500);
+            } else {
+                // 通关失败
+                showLevelComplete(false, 0, false);
+                
+                setTimeout(() => {
+                    // 重新挑战本关
+                    questionNum = 0;
+                    correctInLevel = 0;
+                    lives = 3;
+                    generateQuestion();
+                }, 2000);
+            }
+            
+            saveData();
+        }
+
+        // 显示关卡完成
+        function showLevelComplete(success, stars, isNewRecord) {
+            const levelUpText = document.getElementById('levelUpText');
+            const starDisplay = stars > 0 ? '⭐'.repeat(stars) : '💪';
+            const levelName = levelNames[getGrade()][(level - 1) % 10];
+            
+            if (success) {
+                levelUpText.innerHTML = `🎉 通关成功！<br><span style="font-size:18px">${levelName}</span><br>${starDisplay}`;
+                levelUpText.style.background = 'linear-gradient(135deg, #66BB6A, #43A047)';
+            } else {
+                levelUpText.innerHTML = `😅 差一点！<br><span style="font-size:18px">再试一次</span>`;
+                levelUpText.style.background = 'linear-gradient(135deg, #FF9800, #F57C00)';
+            }
+            
+            if (isNewRecord && success) {
+                levelUpText.innerHTML += '<br>🏆 新纪录！';
+            }
+            
+            levelUpText.style.display = 'block';
+            setTimeout(() => {
+                levelUpText.style.display = 'none';
+                levelUpText.style.background = 'linear-gradient(135deg, #FF9800, #F57C00)';
+            }, 2200);
+        }
+
+        // 达到最高关卡
+        function showMaxLevel() {
+            const levelUpText = document.getElementById('levelUpText');
+            levelUpText.innerHTML = `🎊 全部通关！<br><span style="font-size:18px">你是口算大师！</span>`;
+            levelUpText.style.display = 'block';
+        }
+
+        // 降级（重玩当前关）
+        function downgradeLevel() {
+            if (level > 1) {
+                level--;
+            }
+            questionNum = 0;
+            correctInLevel = 0;
+            lives = 3;
+            showLevelHint();
+            generateQuestion();
+            updateUI();
+            saveData();
+        }
+
+        // 升级（跳到下一关）
+        function upgradeLevel() {
+            if (level < 60) {
+                level++;
+                questionNum = 0;
+                correctInLevel = 0;
+                lives = 3;
+                showLevelHint();
+                generateQuestion();
+                updateUI();
+                saveData();
+            }
+        }
+
+        // 显示关卡提示
+        function showLevelHint() {
+            const levelName = levelNames[getGrade()][(level - 1) % 10];
+            const gradeName = gradeNames[getGrade()];
+            const levelUpText = document.getElementById('levelUpText');
+            levelUpText.textContent = `${gradeName} - ${levelName}`;
+            levelUpText.style.display = 'block';
+            setTimeout(() => {
+                levelUpText.style.display = 'none';
+            }, 1500);
+        }
+
+        // 切换年级下拉
+        function toggleGradeDropdown() {
+            const list = document.getElementById('gradeDropdownList');
+            const btn = document.getElementById('gradeDropdownBtn');
+            list.classList.toggle('show');
+            btn.classList.toggle('open');
+        }
+
+        // 选择年级
+        function selectGrade(gradeIndex) {
+            changeGrade(gradeIndex);
+            document.getElementById('gradeDropdownList').classList.remove('show');
+            document.getElementById('gradeDropdownBtn').classList.remove('open');
+        }
+
+        // 点击其他地方关闭下拉
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('gradeDropdown');
+            if (!dropdown.contains(e.target)) {
+                document.getElementById('gradeDropdownList').classList.remove('show');
+                document.getElementById('gradeDropdownBtn').classList.remove('open');
+            }
+        });
+
+        // 切换年级
+        function changeGrade(gradeIndex) {
+            const newGrade = parseInt(gradeIndex);
+            currentGrade = newGrade;
+            level = newGrade * 10 + 1;
+            questionNum = 0;
+            correctInLevel = 0;
+            lives = 3;
+
+            // 更新下拉按钮文字
+            document.getElementById('gradeDropdownText').textContent = gradeNames[newGrade];
+
+            // 更新运算按钮高亮
+            const modeBtns = document.querySelectorAll('.mode-btn');
+            modeBtns.forEach(btn => btn.classList.remove('active'));
+            modeBtns[0].classList.add('active');
+            currentMode = 'addsub';
+
+            showLevelHint();
+            generateQuestion();
+            saveData();
+        }
+
+        // 设置模式
+        function setMode(mode, btn) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            questionNum = 0;
+            generateQuestion();
+        }
+
+        // ========== 错题和提示系统 ==========
+        
+        // 生成错题key
+        function getWrongKey() {
+            const q = currentQuestion;
+            if (q.type === QUESTION_TYPES.COMPARE) {
+                return `${q.mode}_${q.leftA}${getOperator(q.mode)}${q.leftB}_${q.rightA}${getOperator(q.mode)}${q.rightB}`;
+            } else {
+                return `${q.mode}_${q.a}${getOperator(q.mode)}${q.b}`;
+            }
+        }
+
+        // 记录错题
+        function recordWrongQuestion() {
+            const q = currentQuestion;
+            const key = getWrongKey();
+            
+            if (wrongBook[key]) {
+                wrongBook[key].count++;
+            } else {
+                wrongBook[key] = {
+                    display: q.display,
+                    answer: q.answer,
+                    mode: q.mode,
+                    type: q.type,
+                    grade: getGrade(),
+                    gradeName: gradeNames[getGrade()],
+                    count: 1
+                };
+            }
+
+            // 记录连续错误次数
+            wrongStreak[key] = (wrongStreak[key] || 0) + 1;
+            
+            saveData();
+        }
+
+        // 显示凑十法/借十法提示
+        function showHint() {
+            const q = currentQuestion;
+            const key = getWrongKey();
+            
+            // 只对一二年级加减法显示提示
+            const grade = getGrade();
+            if (grade > 1) return;
+            if (q.mode !== 'add' && q.mode !== 'subtract') return;
+            if (q.type !== QUESTION_TYPES.STANDARD) return;
+            
+            // 连续错误2次以上才显示
+            if ((wrongStreak[key] || 0) < 2) return;
+
+            let hintText = '';
+            
+            if (q.mode === 'add') {
+                // 凑十法提示
+                const { a, b } = q;
+                if (a + b > 10) {
+                    const complement = 10 - a; // 需要凑的数
+                    hintText = `💡 凑十法：${a} + ${b}\n${a} 需要 ${complement} 凑成10\n${b} = ${complement} + ${b - complement}\n所以 ${a} + ${complement} = 10\n10 + ${b - complement} = ${a + b}`;
+                }
+            } else if (q.mode === 'subtract') {
+                // 借十法提示
+                const { a, b } = q;
+                if (a >= 10 && b > a % 10) {
+                    const tens = Math.floor(a / 10) * 10;
+                    const ones = a % 10;
+                    hintText = `💡 借十法：${a} - ${b}\n${a} = ${tens} + ${ones}\n${tens} - ${b} = ${tens - b}\n${tens - b} + ${ones} = ${a - b}`;
+                }
+            }
+
+            if (hintText) {
+                showHintModal(hintText);
+            }
+        }
+
+        // 显示提示弹窗
+        function showHintModal(text) {
+            const modal = document.getElementById('hintModal');
+            document.getElementById('hintText').textContent = text;
+            modal.classList.add('show');
+        }
+
+        // 关闭提示
+        function closeHint() {
+            document.getElementById('hintModal').classList.remove('show');
+        }
+
+        // 显示教学方法弹窗
+        function showTeach(type, questionData) {
+            const { a, b, answer } = questionData;
+            document.getElementById('teachQuestion').textContent = `${a} ${getOperator(type === 'borrow' ? 'subtract' : 'add')} ${b} = ?`;
+
+            let content = '';
+            let speakContent = '';
+
+            if (type === 'makeTen') {
+                // 凑十法
+                document.getElementById('teachTitle').textContent = '💡 凑十法';
+                const complement = 10 - a;
+                const remaining = b - complement;
+
+                speakContent = `${a} 加 ${b} 等于多少？用凑十法。${a} 需要 ${complement} 凑成 10。我们把 ${b} 拆成 ${complement} 和 ${remaining}。先算 ${a} 加 ${complement} 等于 10，再算 10 加 ${remaining} 等于 ${answer}。所以答案是 ${answer}。记忆口诀：看大数，拆小数。`;
+
+                content = `
+                    <div class="teach-step">
+                        第一步：找朋友凑成10<br>
+                        ${a} 需要 <span style="color:#FF9800;font-weight:bold">${complement}</span> 凑成10
+                    </div>
+                    <div class="teach-visual">
+                        <div style="font-size:14px;color:#666;margin-bottom:10px;">
+                            <span style="color:#FF9800;">●</span> 大数 ${a} &nbsp;
+                            <span style="color:#4CAF50;">●</span> 凑的 ${complement} &nbsp;
+                            <span style="color:#4CAF50;">●</span> 剩的 ${remaining}
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">
+                            ${generateDots(a)}
+                            <span style="font-size:24px;color:#1565C0;font-weight:bold">+</span>
+                            ${generateDots(complement, 'green')}
+                            <span style="font-size:24px">+</span>
+                            ${generateDots(remaining, 'green')}
+                        </div>
+                        <div class="dot-row" style="margin-top:5px;">
+                            <span style="color:#666;font-size:12px">${a}</span>
+                            <span></span>
+                            <span style="color:#666;font-size:12px">${complement}</span>
+                            <span></span>
+                            <span style="color:#666;font-size:12px">${remaining}</span>
+                        </div>
+                        <div class="teach-formula">
+                            (10) + <span class="result">${remaining}</span> = <span class="result">${answer}</span>
+                        </div>
+                    </div>
+                    <div class="teach-tip">
+                        📝 记忆口诀：<strong>看大数，拆小数</strong><br>
+                        大数是${a}，小数是${b}，把${b}拆成${complement}和${remaining}
+                    </div>
+                `;
+            } else if (type === 'borrow') {
+                // 借十法
+                document.getElementById('teachTitle').textContent = '💡 借十法';
+                const tens = Math.floor(a / 10) * 10;
+                const ones = a % 10;
+                const tensPart = tens - b;
+                const total = tensPart + ones;
+
+                speakContent = `${a} 减 ${b} 等于多少？用借十法。我们把 ${a} 拆成 ${tens} 加 ${ones}。先算 ${tens} 减 ${b} 等于 ${tensPart}，再算 ${tensPart} 加 ${ones} 等于 ${answer}。所以答案是 ${answer}。记忆口诀：借一当十。`;
+
+                content = `
+                    <div class="teach-step">
+                        第一步：拆分成整十和零几<br>
+                        ${a} = <span style="color:#FF9800;font-weight:bold">${tens}</span> + <span style="color:#4CAF50;font-weight:bold">${ones}</span>
+                    </div>
+                    <div class="teach-visual">
+                        <div style="font-size:14px;color:#666;margin-bottom:10px;">
+                            <span style="color:#FF9800;">●</span> 整十 ${tens} &nbsp;
+                            <span style="color:#4CAF50;">●</span> 个位 ${ones}
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">
+                            ${generateDots(tens/10)}
+                            <span style="font-size:24px">+</span>
+                            ${generateDots(ones, 'green')}
+                        </div>
+                        <div style="margin:10px 0;color:#666;font-size:13px;">第二步：从整十借1减</div>
+                        <div class="teach-formula">
+                            <span style="color:#FF9800">${tens}</span> - ${b} = <span style="color:#4CAF50">${tensPart}</span><br>
+                            <span style="color:#4CAF50">${tensPart}</span> + ${ones} = <span class="result">${total}</span>
+                        </div>
+                    </div>
+                    <div class="teach-tip">
+                        📝 记忆口诀：<strong>借一当十</strong><br>
+                        不够减就向十位借，10减几得几，再加上个位
+                    </div>
+                `;
+            }
+
+            // 设置朗读文本并添加按钮
+            currentTeachText = speakContent;
+            content += `
+                <div style="margin-top:15px;">
+                    <button class="speak-btn" onclick="speakTeach()" style="background:#26C6DA;padding:8px 15px;font-size:13px;border:none;border-radius:12px;color:white;cursor:pointer;">
+                        🔊 点击听老师讲解
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('teachContent').innerHTML = content;
+            document.getElementById('teachModal').classList.add('show');
+        }
+
+        // 显示连续错误提示
+        function showStreakHint(key) {
+            const item = wrongBook[key];
+            if (!item) return;
+
+            let tipText = '';
+            let teachType = '';
+
+            if (item.mode === 'add') {
+                // 凑十法
+                const parts = item.display.match(/(\d+)\s*\+\s*(\d+)/);
+                if (parts) {
+                    const a = parseInt(parts[1]);
+                    const b = parseInt(parts[2]);
+                    if (a + b > 10) {
+                        teachType = 'makeTen';
+                        const complement = 10 - a;
+                        tipText = `这题有点难！试试"凑十法"：\n\n${a} + ${b} = ?\n\n💡 提示：${a}需要${complement}凑成10\n${b} = ${complement} + ${b - complement}\n所以 ${a} + ${b} = 10 + ${b - complement} = ${a + b}`;
+                    }
+                }
+            } else if (item.mode === 'subtract') {
+                // 借十法
+                const parts = item.display.match(/(\d+)\s*-\s*(\d+)/);
+                if (parts) {
+                    const a = parseInt(parts[1]);
+                    const b = parseInt(parts[2]);
+                    if (a >= 10 && b > a % 10) {
+                        teachType = 'borrow';
+                        const tens = Math.floor(a / 10) * 10;
+                        const ones = a % 10;
+                        const tensPart = tens - b;
+                        tipText = `这题有点难！试试"借十法"：\n\n${a} - ${b} = ?\n\n💡 提示：${a} = ${tens} + ${ones}\n${tens} - ${b} = ${tensPart}\n${tensPart} + ${ones} = ${a - b}`;
+                    }
+                }
+            }
+
+            if (teachType && tipText) {
+                // 显示教学按钮
+                showTeachModal(tipText, teachType, item);
+            } else {
+                // 普通提示
+                showHintModal(tipText || '这题有点难，多想想哦！\n\n💪 加油！');
+            }
+        }
+
+        // 当前教学文本（用于语音朗读）
+        let currentTeachText = '';
+
+        // 显示教学弹窗（带语音按钮）
+        function showTeachModal(text, teachType, item) {
+            const { a, b, answer } = item;
+            
+            document.getElementById('teachQuestion').textContent = `${a} ${getOperator(item.mode === 'add' ? 'add' : 'subtract')} ${b} = ?`;
+
+            let content = '';
+            const isAdd = item.mode === 'add';
+            let speakContent = ''; // 语音朗读内容
+
+            if (teachType === 'makeTen') {
+                // 凑十法
+                document.getElementById('teachTitle').textContent = '💡 凑十法';
+                const complement = 10 - a;
+                const remaining = b - complement;
+
+                speakContent = `${a} 加 ${b} 等于多少？用凑十法。${a} 需要 ${complement} 凑成 10。我们把 ${b} 拆成 ${complement} 和 ${remaining}。先算 ${a} 加 ${complement} 等于 10，再算 10 加 ${remaining} 等于 ${answer}。所以答案是 ${answer}。记忆口诀：看大数，拆小数。`;
+
+                content = `
+                    <div class="teach-step">
+                        第一步：找朋友凑成10<br>
+                        ${a} 需要 <span style="color:#FF9800;font-weight:bold">${complement}</span> 凑成10
+                    </div>
+                    <div class="teach-visual">
+                        <div style="font-size:14px;color:#666;margin-bottom:10px;">
+                            <span style="color:#FF9800;">●</span> 大数 ${a} &nbsp;
+                            <span style="color:#4CAF50;">●</span> 凑的 ${complement} &nbsp;
+                            <span style="color:#4CAF50;">●</span> 剩的 ${remaining}
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">
+                            ${generateDots(a)}
+                            <span style="font-size:24px;color:#1565C0;font-weight:bold">+</span>
+                            ${generateDots(complement, 'green')}
+                            <span style="font-size:24px">+</span>
+                            ${generateDots(remaining, 'green')}
+                        </div>
+                        <div class="dot-row" style="margin-top:5px;">
+                            <span style="color:#666;font-size:12px">${a}</span>
+                            <span></span>
+                            <span style="color:#4CAF50;font-size:12px">${complement}</span>
+                            <span></span>
+                            <span style="color:#4CAF50;font-size:12px">${remaining}</span>
+                        </div>
+                        <div class="teach-formula">
+                            (10) + <span class="result">${remaining}</span> = <span class="result">${answer}</span>
+                        </div>
+                    </div>
+                    <div class="teach-tip">
+                        📝 记忆口诀：<strong>看大数，拆小数</strong><br>
+                        大数是${a}，小数是${b}，把${b}拆成${complement}和${remaining}
+                    </div>
+                `;
+            } else if (teachType === 'borrow') {
+                // 借十法
+                document.getElementById('teachTitle').textContent = '💡 借十法';
+                const tens = Math.floor(a / 10) * 10;
+                const ones = a % 10;
+                const tensPart = tens - b;
+
+                speakContent = `${a} 减 ${b} 等于多少？用借十法。我们把 ${a} 拆成 ${tens} 加 ${ones}。先算 ${tens} 减 ${b} 等于 ${tensPart}，再算 ${tensPart} 加 ${ones} 等于 ${answer}。所以答案是 ${answer}。记忆口诀：借一当十。`;
+
+                content = `
+                    <div class="teach-step">
+                        第一步：拆分成整十和零几<br>
+                        ${a} = <span style="color:#FF9800;font-weight:bold">${tens}</span> + <span style="color:#4CAF50;font-weight:bold">${ones}</span>
+                    </div>
+                    <div class="teach-visual">
+                        <div style="font-size:14px;color:#666;margin-bottom:10px;">
+                            <span style="color:#FF9800;">●</span> 整十 ${tens} &nbsp;
+                            <span style="color:#4CAF50;">●</span> 个位 ${ones}
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">
+                            ${generateDots(tens/10)}
+                            <span style="font-size:24px">+</span>
+                            ${generateDots(ones, 'green')}
+                        </div>
+                        <div style="margin:10px 0;color:#666;font-size:13px;">第二步：从整十借1减</div>
+                        <div class="teach-formula">
+                            <span style="color:#FF9800">${tens}</span> - ${b} = <span style="color:#4CAF50">${tensPart}</span><br>
+                            <span style="color:#4CAF50">${tensPart}</span> + ${ones} = <span class="result">${answer}</span>
+                        </div>
+                    </div>
+                    <div class="teach-tip">
+                        📝 记忆口诀：<strong>借一当十</strong><br>
+                        不够减就向十位借，10减几得几，再加上个位
+                    </div>
+                `;
+            }
+
+            // 保存朗读文本
+            currentTeachText = speakContent;
+
+            // 添加语音朗读按钮
+            content += `
+                <div style="margin-top:15px;">
+                    <button class="speak-btn" onclick="speakTeach()" style="background:#26C6DA;padding:8px 15px;font-size:13px;border:none;border-radius:12px;color:white;cursor:pointer;">
+                        🔊 点击听老师讲解
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('teachContent').innerHTML = content;
+            document.getElementById('teachModal').classList.add('show');
+        }
+
+        // 朗读状态
+        let isSpeaking = false;
+        let isPaused = false;
+
+        // 朗读当前教学内容（带暂停功能）
+        function speakTeach() {
+            if (!('speechSynthesis' in window)) {
+                alert('抱歉，您的浏览器不支持语音朗读功能');
+                return;
+            }
+
+            if (isSpeaking && !isPaused) {
+                // 正在朗读，点击暂停
+                window.speechSynthesis.pause();
+                isPaused = true;
+                updateSpeakButton(true);
+                return;
+            }
+
+            if (isPaused) {
+                // 暂停状态，点击继续
+                window.speechSynthesis.resume();
+                isPaused = false;
+                updateSpeakButton(false);
+                return;
+            }
+
+            // 开始新的朗读
+            if (!currentTeachText) {
+                alert('暂无朗读内容');
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+            isSpeaking = true;
+            isPaused = false;
+
+            const utterance = new SpeechSynthesisUtterance(currentTeachText);
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.9;
+            utterance.pitch = 1.0;
+
+            // 尝试选择中文语音
+            if (window.speechSynthesis.getVoices) {
+                const voices = window.speechSynthesis.getVoices();
+                const zhVoice = voices.find(v => v.lang.includes('zh'));
+                if (zhVoice) {
+                    utterance.voice = zhVoice;
+                }
+            }
+
+            utterance.onend = function() {
+                isSpeaking = false;
+                isPaused = false;
+                updateSpeakButton(false);
+            };
+
+            window.speechSynthesis.speak(utterance);
+            updateSpeakButton(false);
+        }
+
+        // 更新朗读按钮状态
+        function updateSpeakButton(paused) {
+            const btns = document.querySelectorAll('.speak-btn');
+            btns.forEach(btn => {
+                btn.textContent = paused ? '▶️ 继续' : '⏸️ 暂停';
+            });
+        }
+
+        // 旧函数保留兼容性
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // 从错题本点击学习
+        function learnFromWrongBook(a, b, teachType, answer) {
+            const item = { a: a, b: b, answer: answer, mode: teachType === 'makeTen' ? 'add' : 'subtract' };
+            showTeachModal('', teachType, item);
+        }
+
+        // 生成小圆点HTML
+        // color: 'orange'(默认) | 'green'(小数/补数) | 'blue'(十位)
+        function generateDots(count, color = 'orange') {
+            let html = '';
+            let colorClass = '';
+            if (color === 'green') colorClass = 'small';
+            html += `<div class="dot-row">`;
+            for (let i = 0; i < count; i++) {
+                html += `<span class="dot ${colorClass}"></span>`;
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        // 判断题目类型并显示学习按钮
+        function getLearnButton(item) {
+            // 只有加减法且在一二年级才显示学习按钮
+            if (item.grade > 1) return '';
+            if (item.mode !== 'add' && item.mode !== 'subtract') return '';
+            if (item.type === 'compare') return '';
+
+            // 凑十法：加法且结果大于10
+            if (item.mode === 'add') {
+                const parts = item.display.match(/(\d+)\s*\+\s*(\d+)/);
+                if (parts) {
+                    const a = parseInt(parts[1]);
+                    const b = parseInt(parts[2]);
+                    if (a + b > 10) {
+                        return `<button class="learn-btn" onclick="learnFromWrongBook(${a},${b},'makeTen',${item.answer})">💡学凑十法</button>`;
+                    }
+                }
+            }
+
+            // 借十法：减法且被减数>=10
+            if (item.mode === 'subtract') {
+                const parts = item.display.match(/(\d+)\s*-\s*(\d+)/);
+                if (parts) {
+                    const a = parseInt(parts[1]);
+                    const b = parseInt(parts[2]);
+                    if (a >= 10 && b > a % 10) {
+                        return `<button class="learn-btn" onclick="learnFromWrongBook(${a},${b},'borrow',${item.answer})">💡学借十法</button>`;
+                    }
+                }
+            }
+
+            return '';
+        }
+
+        // 显示错题本
+        function showWrongBook() {
+            const content = document.getElementById('wrongBookContent');
+            let html = '';
+
+            // 按年级分组显示
+            const gradeGroups = {};
+            for (const key in wrongBook) {
+                const item = wrongBook[key];
+                if (!gradeGroups[item.grade]) {
+                    gradeGroups[item.grade] = [];
+                }
+                gradeGroups[item.grade].push(item);
+            }
+
+            // 按年级顺序显示
+            for (let i = 0; i < 6; i++) {
+                if (gradeGroups[i] && gradeGroups[i].length > 0) {
+                    html += `<div class="wrong-section">`;
+                    html += `<div class="wrong-section-title">${gradeNames[i]} (${gradeGroups[i].length}题)</div>`;
+
+                    gradeGroups[i].forEach(item => {
+                        const learnBtn = getLearnButton(item);
+                        html += `
+                            <div class="wrong-item">
+                                <div class="wrong-item-actions">
+                                    <span class="question">${item.display} 正确答案: ${item.answer}</span>
+                                    ${learnBtn}
+                                </div>
+                                <span class="count">错 ${item.count} 次</span>
+                            </div>`;
+                    });
+
+                    html += `</div>`;
+                }
+            }
+
+            if (html === '') {
+                html = '<div class="empty-note">太棒了！暂时没有错题记录 ✨</div>';
+            }
+
+            content.innerHTML = html;
+            document.getElementById('wrongBookModal').classList.add('show');
+        }
+
+        // 关闭弹窗
+        function closeModal(modalId) {
+            // 关闭弹窗时停止语音
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+                isPaused = false;
+            }
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // 点击遮罩关闭弹窗
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        // 点击遮罩时也停止语音
+                        if (window.speechSynthesis) {
+                            window.speechSynthesis.cancel();
+                            isSpeaking = false;
+                            isPaused = false;
+                        }
+                        overlay.classList.remove('show');
+                    }
+                });
+            });
+        });
+
+        // 游戏结束
+        function gameOver() {
+            // 显示游戏结束遮罩
+            const overlay = document.createElement('div');
+            overlay.id = 'gameoverOverlay';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:2000;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;font-size:20px;';
+            
+            const levelName = levelNames[getGrade()][(level - 1) % 10];
+            overlay.innerHTML = `
+                <div style="font-size:48px;margin-bottom:20px;">💔</div>
+                <div style="font-size:28px;font-weight:bold;margin-bottom:10px;">生命耗尽！</div>
+                <div style="margin-bottom:20px;">${gradeNames[getGrade()]} - ${levelName}</div>
+                <div style="margin-bottom:30px;">本关正确：${correctInLevel} / ${questionsPerLevel}</div>
+                <button onclick="this.parentElement.remove();resetLevel();" style="background:linear-gradient(135deg,#66BB6A,#43A047);color:white;border:none;padding:15px 40px;border-radius:25px;font-size:18px;font-weight:bold;cursor:pointer;">重新挑战</button>
+            `;
+            
+            document.body.appendChild(overlay);
+        }
+
+        // 重置当前关
+        function resetLevel() {
+            questionNum = 0;
+            correctInLevel = 0;
+            lives = 3;
+            correct = 0;
+            wrong = 0;
+            combo = 0;
+            generateQuestion();
+            updateUI();
+        }
+
+        // 显示连击
+        function showCombo(combo) {
+            playSound('combo');
+            const comboDisplay = document.getElementById('comboDisplay');
+            comboDisplay.textContent = `连击 x${combo}！`;
+            comboDisplay.style.animation = 'none';
+            setTimeout(() => {
+                comboDisplay.style.animation = 'comboPopup 0.6s ease forwards';
+            }, 10);
+        }
+
+        // 更新UI
+        function updateUI() {
+            const grade = getGrade();
+            const levelInGrade = (level - 1) % 10 + 1;
+            const levelName = levelNames[grade] ? levelNames[grade][levelInGrade - 1] : '关卡' + level;
+            
+            document.getElementById('score').textContent = score;
+
+            // 更新年级下拉按钮文字
+            document.getElementById('gradeDropdownText').textContent = gradeNames[grade];
+
+            // 更新年级下拉列表高亮
+            document.querySelectorAll('.grade-dropdown-item').forEach((item, index) => {
+                item.classList.toggle('selected', index === grade);
+            });
+
+            document.getElementById('correct').textContent = correct;
+            document.getElementById('wrong').textContent = wrong;
+            document.getElementById('combo').textContent = combo;
+
+            const hearts = document.querySelectorAll('.heart');
+            hearts.forEach((heart, index) => {
+                if (index < lives) {
+                    heart.classList.remove('lost');
+                } else {
+                    heart.classList.add('lost');
+                }
+            });
+
+            const progress = ((questionNum + 1) / questionsPerLevel) * 100;
+            document.getElementById('progress').style.width = `${progress}%`;
+            document.getElementById('progress').textContent = `${correctInLevel} / ${questionsPerLevel}`;
+            
+            // 进度条颜色根据正确数变化
+            const progressEl = document.getElementById('progress');
+            if (correctInLevel >= 8) {
+                progressEl.style.background = 'linear-gradient(135deg, #66BB6A, #43A047)'; // 绿色-可通关
+            } else if (correctInLevel >= 5) {
+                progressEl.style.background = 'linear-gradient(135deg, #FF9800, #F57C00)'; // 橙色-努力中
+            } else {
+                progressEl.style.background = 'linear-gradient(135deg, #42A5F5, #1E88E5)'; // 蓝色-进行中
+            }
+        }
+
+        // 播放音效
+        function playSound(type) {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                if (type === 'correct') {
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                } else if (type === 'wrong') {
+                    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(150, audioContext.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                } else if (type === 'combo') {
+                    oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.1);
+                    oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                } else if (type === 'levelup') {
+                    oscillator.frequency.setValueAtTime(523, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.4);
+                }
+            } catch (e) {
+                console.log('音效播放失败:', e);
+            }
+        }
+
+        // 保存数据
+        function saveData() {
+            const data = {
+                score, level, maxCombo, wrongBook, levelProgress
+            };
+            localStorage.setItem('mathGameData', JSON.stringify(data));
+        }
+
+        // 加载数据
+        function loadData() {
+            const saved = localStorage.getItem('mathGameData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                score = data.score || 0;
+                level = data.level || 1;
+                maxCombo = data.maxCombo || 0;
+                wrongBook = data.wrongBook || {};
+                levelProgress = data.levelProgress || {};
+                currentGrade = getGrade();
+            }
+            showLevelHint();
+            document.getElementById('gradeDropdownText').textContent = gradeNames[currentGrade];
+        }
+
+        // ========== 选择选项 ==========
+        function selectOption(selected) {
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.disabled = true);
+
+            let isCorrect = false;
+            
+            if (currentQuestion.type === QUESTION_TYPES.COMPARE) {
+                isCorrect = selected === currentQuestion.answer;
+            } else {
+                isCorrect = parseInt(selected) === parseInt(currentQuestion.answer);
+            }
+
+            if (isCorrect) {
+                // 找正确答案按钮
+                let correctBtn;
+                if (currentQuestion.type === QUESTION_TYPES.COMPARE) {
+                    correctBtn = Array.from(buttons).find(b => b.textContent === currentQuestion.answer);
+                } else {
+                    correctBtn = Array.from(buttons).find(b => parseInt(b.textContent) === parseInt(currentQuestion.answer));
+                }
+                if (correctBtn) correctBtn.classList.add('correct');
+
+                playSound('correct');
+
+                correct++;
+                combo++;
+                maxCombo = Math.max(maxCombo, combo);
+                correctInLevel++;
+                
+                // 答对了，清除该题的错误记录
+                wrongStreak[getWrongKey()] = 0;
+
+                if (isChallengeMode) {
+                    challengeCorrect++;
+                    challengeCombo++;
+                    challengeMaxCombo = Math.max(challengeMaxCombo, challengeCombo);
+                }
+
+                const comboMultiplier = combo >= 8 ? 2 : combo >= 4 ? 1.5 : 1;
+                const points = Math.floor(10 * comboMultiplier);
+                score += points;
+
+                if (combo >= 3) {
+                    showCombo(combo);
+                }
+
+                setTimeout(() => {
+                    nextQuestion();
+                }, 500);
+            } else {
+                // 找错误和正确答案的按钮
+                let wrongBtn, correctBtn;
+                if (currentQuestion.type === QUESTION_TYPES.COMPARE) {
+                    wrongBtn = Array.from(buttons).find(b => b.textContent === selected);
+                    correctBtn = Array.from(buttons).find(b => b.textContent === currentQuestion.answer);
+                } else {
+                    wrongBtn = Array.from(buttons).find(b => parseInt(b.textContent) === parseInt(selected));
+                    correctBtn = Array.from(buttons).find(b => parseInt(b.textContent) === parseInt(currentQuestion.answer));
+                }
+
+                if (wrongBtn) wrongBtn.classList.add('wrong');
+                setTimeout(() => {
+                    if (correctBtn) correctBtn.classList.add('correct');
+                }, 300);
+
+                playSound('wrong');
+
+                wrong++;
+                combo = 0;
+                
+                // 记录错题
+                recordWrongQuestion();
+                const qKey = getWrongKey();
+
+                if (isChallengeMode) {
+                    challengeWrong++;
+                    challengeCombo = 0;
+                }
+
+                // 显示提示（如果有）
+                setTimeout(() => {
+                    showHint();
+                }, 800);
+
+                // 三次错误后显示学习提示，不减心
+                if (wrongStreak[qKey] >= 3) {
+                    // 提示学习，不减心
+                    showStreakHint(qKey);
+                } else {
+                    // 正常扣心
+                    lives--;
+                }
+
+                if (isChallengeMode) {
+                    setTimeout(() => {
+                        endChallenge();
+                    }, 1000);
+                } else {
+                    setTimeout(() => {
+                        if (lives <= 0) {
+                            gameOver();
+                        } else {
+                            nextQuestion();
+                        }
+                    }, 800);
+                }
+            }
+
+            updateUI();
+            if (isChallengeMode) updateChallengeTimer();
+        };
+
+        // ========== 限时挑战模式 ==========
+
+        // 开始挑战
+        function startChallenge() {
+            isChallengeMode = true;
+            challengeTimer = 60;
+            challengeCorrect = 0;
+            challengeWrong = 0;
+            challengeCombo = 0;
+            challengeMaxCombo = 0;
+
+            document.getElementById('challengeHeader').classList.add('show');
+
+            questionNum = 0;
+            correctInLevel = 0;
+            lives = 3;
+            combo = 0;
+            correct = 0;
+            wrong = 0;
+            score = 0;
+
+            generateQuestion();
+            updateUI();
+
+            updateChallengeTimer();
+            challengeInterval = setInterval(() => {
+                challengeTimer--;
+                updateChallengeTimer();
+                if (challengeTimer <= 0) {
+                    endChallenge();
+                }
+            }, 1000);
+        }
+
+        // 更新挑战计时器显示
+        function updateChallengeTimer() {
+            document.getElementById('challengeTimer').textContent = challengeTimer;
+            document.getElementById('challengeScore').textContent = score;
+        }
+
+        // 结束挑战
+        function endChallenge() {
+            clearInterval(challengeInterval);
+            isChallengeMode = false;
+
+            const isNewRecord = saveToRank(currentMode, score);
+
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('resultCorrect').textContent = challengeCorrect;
+            document.getElementById('resultMaxCombo').textContent = challengeMaxCombo;
+            document.getElementById('newRecordText').style.display = isNewRecord ? 'block' : 'none';
+            document.getElementById('challengeEndModal').classList.add('show');
+        }
+
+        // 关闭挑战结束弹窗并继续挑战
+        function closeChallengeEnd() {
+            document.getElementById('challengeEndModal').classList.remove('show');
+            startChallenge();
+        }
+
+        // 退出挑战模式
+        function exitChallenge() {
+            clearInterval(challengeInterval);
+            isChallengeMode = false;
+            document.getElementById('challengeEndModal').classList.remove('show');
+            document.getElementById('challengeHeader').classList.remove('show');
+            resetLevel();
+            updateUI();
+        }
+
+        // 保存到排行榜
+        function saveToRank(mode, score) {
+            const ranks = getRanks();
+            if (!ranks[mode]) ranks[mode] = [];
+
+            const isNewRecord = ranks[mode].length < 3 || score > ranks[mode][ranks[mode].length - 1].score;
+
+            ranks[mode].push({
+                score: score,
+                date: new Date().toLocaleDateString(),
+                correct: challengeCorrect,
+                maxCombo: challengeMaxCombo
+            });
+
+            ranks[mode].sort((a, b) => b.score - a.score);
+            ranks[mode] = ranks[mode].slice(0, 10);
+
+            localStorage.setItem('mathRankData', JSON.stringify(ranks));
+            return isNewRecord;
+        }
+
+        // 获取排行榜数据
+        function getRanks() {
+            const saved = localStorage.getItem('mathRankData');
+            return saved ? JSON.parse(saved) : {};
+        }
+
+        // 显示排行榜
+        function showRank() {
+            currentRankTab = 'addsub';
+            updateRankTabs();
+            renderRankList();
+            document.getElementById('rankModal').classList.add('show');
+        }
+
+        // 切换排行榜标签
+        function switchRankTab(mode) {
+            currentRankTab = mode;
+            updateRankTabs();
+            renderRankList();
+        }
+
+        // 更新标签高亮
+        function updateRankTabs() {
+            document.querySelectorAll('.rank-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent === getModeName(currentRankTab)) {
+                    tab.classList.add('active');
+                }
+            });
+        }
+
+        // 获取模式名称
+        function getModeName(mode) {
+            const names = { addsub: '加减', muldiv: '乘除', add: '加法', subtract: '减法', multiply: '乘法', divide: '除法' };
+            return names[mode] || mode;
+        }
+
+        // 渲染排行榜
+        function renderRankList() {
+            const ranks = getRanks()[currentRankTab] || [];
+            let html = '';
+
+            if (ranks.length === 0) {
+                html = '<div class="empty-note">暂无记录，快去挑战吧！</div>';
+            } else {
+                const medals = ['🥇', '🥈', '🥉'];
+                ranks.forEach((item, index) => {
+                    const medal = index < 3 ? medals[index] : `${index + 1}.`;
+                    html += `
+                        <div class="rank-item">
+                            <div>
+                                <span class="rank-num">${medal}</span>
+                                <span>${item.score} 分</span>
+                            </div>
+                            <div style="text-align: right; font-size: 12px; color: #999;">
+                                <div>答对 ${item.correct} 题</div>
+                                <div>最高连击 ${item.maxCombo}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('rankContent').innerHTML = html;
+        }
+
+        // 初始化
+        loadData();
+        generateQuestion();
+        updateUI();
+    </script>
+</body>
+</html>
